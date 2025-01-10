@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Learning Videos</h2>
+    <div class="row justify-content-center">
+        <!-- Example Video 1 -->
+        <div class="col-md-4 mb-4 text-center">
+            <div class="embed-responsive embed-responsive-16by9">
+                <iframe class="embed-responsive-item" 
+                    src="https://www.youtube.com/embed/tAh2XhAY9BA" 
+                    allowfullscreen></iframe>
+            </div>
+            <p class="text-center mt-2">Video Title 1</p>
+        </div>
+        <!-- Example Video 2 -->
+        <div class="col-md-4 mb-4 text-center">
+            <div class="embed-responsive embed-responsive-16by9">
+                <iframe class="embed-responsive-item" 
+                    src="https://www.youtube.com/embed/-3WuQxnA7Hg" 
+                    allowfullscreen></iframe>
+            </div>
+            <p class="text-center mt-2">Video Title 2</p>
+        </div>
+        <!-- Example Video 3 -->
+        <div class="col-md-4 mb-4 text-center">
+            <div class="embed-responsive embed-responsive-16by9">
+                <iframe class="embed-responsive-item" 
+                    src="https://www.youtube.com/embed/OA-DQPGvdiU" 
+                    allowfullscreen></iframe>
+            </div>
+            <p class="text-center mt-2">Video Title 3</p>
+        </div>
+        
+    </div>
+</div>
+
+<!-- Chord Training Section -->
+<div class="container my-5">
+    <h2 class="text-center mb-4">Chord Training</h2>
+    <div class="row justify-content-center">
+        <!-- Chord Button 1 -->
+        <div class="col-md-3 mb-4 text-center">
+            <button class="btn btn-primary chord-button" data-chord="C">Play C Major</button>
+            <audio id="audio-C" src="{{ url_for('static', filename='chords/output (1).wav') }}"></audio>
+        </div>
+        <!-- Chord Button 2 -->
+        <div class="col-md-3 mb-4 text-center">
+            <button class="btn btn-primary chord-button" data-chord="D">Play D Major</button>
+            <audio id="audio-D" src="{{ url_for('static', filename='chords/output (2).wav') }}"></audio>
+        </div>
+        <!-- Chord Button 3 -->
+        <div class="col-md-3 mb-4 text-center">
+            <button class="btn btn-primary chord-button" data-chord="E">Play E Major</button>
+            <audio id="audio-E" src="{{ url_for('static', filename='chords/output (3).wav') }}"></audio>
+        </div>
+        <!-- Chord Button 4 -->
+        <div class="col-md-3 mb-4 text-center">
+            <button class="btn btn-primary chord-button" data-chord="G">Play G Major</button>
+            <audio id="audio-G" src="{{ url_for('static', filename='chords/output (4).wav') }}"></audio>
+        </div>
+    </div>
+</div>
+
+<!-- Add this script before the closing </body> tag -->
+<script>
+    // Function to stop all audio elements
+    function stopAllAudio() {
+        document.querySelectorAll('audio').forEach(audio => {
+            audio.pause();
+            audio.currentTime = 0;
+        });
+    }
+
+    // Add event listeners to each button
+    document.querySelectorAll('.chord-button').forEach(button => {
+        button.addEventListener('click', function() {
+            // Stop any currently playing audio
+            stopAllAudio();
+            
+            // Play the selected audio
+            const chord = this.getAttribute('data-chord');
+            const audio = document.getElementById(`audio-${chord}`);
+            audio.play();
+        });
+    });
+</script>
+
+
+
+{% endblock %}

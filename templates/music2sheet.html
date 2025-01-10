@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="text-center mb-4">
+        <h1>Convert Audio to Sheet Music</h1>
+        <p class="lead">Follow these steps to convert your audio into sheet music.</p>
+    </div>
+
+    <!-- Step 1: Upload  -->
+    <div class="step mb-5">
+        <h2>Step 1: Upload Audio file</h2>
+        <form method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+                <input type="file" class="form-control" name="file" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Upload Audio Music</button>
+        </form>
+    </div>
+
+    <!-- Step 2: Convert to MIDI -->
+    <div class="step mb-5">
+        <h2>Step 2: Convert to MIDI</h2>
+        <p class="lead">Once the file is uploaded, click below to generate the MIDI file.</p>
+        <form method="POST">
+            <button type="submit" class="btn btn-success">Convert to MIDI</button>
+        </form>
+    </div>
+
+    <div class="step mb-5">
+        <h2>Step 3: Upload MIDI File</h2>
+        <form action="{{ url_for('upload_midi_sheet') }}" method="post" enctype="multipart/form-data">
+            <div class="mb-3">
+                <input type="file" class="form-control" name="file" accept=".mid,.midi" required>
+            </div>
+            <button type="submit" class="btn btn-warning">Convert to Sheet Music</button>
+        </form>
+    </div>
+
+    <!-- Display Result after Conversion -->
+    {% if result_png %}
+    <div class="step mt-5">
+        <h2>Your Converted Sheet Music</h2>
+        <p>Download your sheet music in PNG format:</p>
+        <a href="{{ result_png }}" class="btn btn-success" download>Download Sheet Music</a>
+    </div>
+    {% endif %}
+    <br>
+    <br>
+</div>
+{% endblock %}

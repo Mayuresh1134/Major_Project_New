@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+
+    <!-- Audio Style Transfer Section -->
+    <div class="step mb-5">
+        <h1>Generated Results</h1>
+        <h2>Stylized Audio Output</h2>
+        <audio controls>
+            <source src="{{ url_for('uploaded_file', filename=audio_file) }}" type="audio/wav">
+            Your browser does not support the audio element.
+        </audio>
+    
+        <h2>Audio Style Transfer Visualization</h2>
+        <img src="{{ url_for('uploaded_file', filename=image_file) }}" alt="Output Visualization">
+    
+    </div>
+
+</div>
+{% endblock %}

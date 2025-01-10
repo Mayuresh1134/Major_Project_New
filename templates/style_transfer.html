@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+
+    <!-- Audio Style Transfer Section -->
+    <div class="step mb-5">
+        <h2>Audio Style Transfer</h2>
+
+        <form method="post" action="/upload_transfer" enctype="multipart/form-data">
+            <label for="contentAudio">Content Audio:</label>
+            <input type="file" name="contentAudio" required><br><br>
+            <label for="styleAudio">Style Audio:</label>
+            <input type="file" name="styleAudio" required><br><br>
+            <input type="submit" value="Upload">
+        </form>
+    </div>
+
+</div>
+{% endblock %}

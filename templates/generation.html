@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+
+    <!-- Music Visualization Section -->
+    <div class="step mb-5">
+        <h2>Generate Notes</h2>
+
+        <!-- Music Generation Form -->
+        <form action="/generation" method="post" enctype="multipart/form-data">
+            <label for="midi_file">Upload MIDI File:</label>
+            <input type="file" id="midi_file" name="midi_file" required>
+            <br><br>
+
+            <label for="temperature">Temperature (e.g., 1.0):</label>
+            <input type="number" step="0.1" id="temperature" name="temperature" required>
+            <br><br>
+
+            <label for="num_predictions">Number of Notes to Generate:</label>
+            <input type="number" id="num_predictions" name="num_predictions" required>
+            <br><br>
+            <label for="instrument_name">Choose Instrument:</label>
+            <select id="instrument_name" name="instrument_name">
+                {% for instrument in instruments %}
+                    <option value="{{ instrument }}">{{ instrument }}</option>
+                {% endfor %}
+            </select>
+            <br><br>
+
+            <button type="submit" class="btn btn-primary">Generate MIDI</button>
+        </form>
+    </div>
+
+    <div style="margin-top: 250px;"></div>
+
+</div>
+{% endblock %}

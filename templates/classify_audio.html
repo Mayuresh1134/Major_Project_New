@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1> Audio File to Classify its Genre</h1>
+    
+    {% if prediction %}
+        <h2>Predicted Genre: {{ prediction }}</h2>
+    {% endif %}
+
+    
+    <div style="margin-top: 350px;"></div>
+{% endblock %}
