@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Library{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>Library</h1>
+  <p>Everything you've made, newest first. It is kept in the <code>app_data</code> folder on this computer; the oldest results are removed after 200.</p>
+</header>
+{% if items %}
+<div class="lib-filters" data-lib-filters role="group" aria-label="Show">
+  <button type="button" data-filter="all" aria-pressed="true">All</button>
+  {% for kind, label in kind_labels.items() %}<button type="button" data-filter="{{ kind }}" aria-pressed="false">{{ label }}</button>{% endfor %}
+</div>
+<div class="panel" style="padding:0.4rem 1.2rem; overflow-x:auto">
+<table class="plain lib-table">
+  <thead><tr><th>Name</th><th>Tool</th><th>Details</th><th>Made</th><th><span class="visually-hidden">Delete</span></th></tr></thead>
+  <tbody>
+  {% for r in items %}
+    <tr data-kind="{{ r.kind }}">
+      <td><a href="{{ url_for('main.result', rid=r.id) }}">{{ r.title }}</a></td>
+      <td class="kind">{{ kind_labels[r.kind] }}</td>
+      <td class="muted">{{ r.summary }}</td>
+      <td class="when"><time datetime="{{ r.created }}">{{ r.created[:16].replace('T', ' ') }}</time></td>
+      <td><button class="link-button" type="button" data-delete="{{ url_for('main.api_delete', rid=r.id) }}" data-title="{{ r.title }}">Delete</button></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% else %}
+<p class="empty">Nothing here yet. Open a tool from the menu: <a href="{{ url_for('main.analyze') }}">analyze a recording</a>, <a href="{{ url_for('main.play') }}">play a score</a> or <a href="{{ url_for('main.compose') }}">continue a melody</a>.</p>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script>
+  // show times in the viewer's own time zone
+  document.querySelectorAll("time[datetime]").forEach((t) => {
+    const d = new Date(t.getAttribute("datetime"));
+    if (!isNaN(d)) t.textContent = d.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+  });
+</script>
+{% endblock %}

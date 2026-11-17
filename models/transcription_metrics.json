@@ -1,0 +1,27 @@
+{
+  "pieces": 20,
+  "source": "music21 corpus Bach chorales, rendered with FluidSynth",
+  "match": "pitch and start within 50 ms",
+  "results": {
+    "piano": {
+      "precision": 0.756,
+      "recall": 0.913,
+      "f1": 0.824
+    },
+    "strings": {
+      "precision": 0.18,
+      "recall": 0.304,
+      "f1": 0.224
+    },
+    "organ": {
+      "precision": 0.202,
+      "recall": 0.551,
+      "f1": 0.294
+    },
+    "melody only (piano, against soprano)": {
+      "precision": 0.624,
+      "recall": 0.825,
+      "f1": 0.708
+    }
+  }
+}

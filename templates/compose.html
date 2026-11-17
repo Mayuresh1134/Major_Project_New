@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% from "_macros.html" import recent_list, range_input, voice_select with context %}
+{% block title %}Compose{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>Continue a melody</h1>
+  <p>Give the melody model a tune and it writes what comes next, one note at a time. Generate a few and keep the one you like.</p>
+</header>
+<div class="tool-layout">
+  <form class="panel" method="post" action="{{ url_for('main.api_compose') }}" enctype="multipart/form-data" data-job-form>
+    {% with legend="Start from", results=sources, prefix="compose", default_tab="example" %}{% include "_source_tabs.html" %}{% endwith %}
+    <fieldset>
+      <legend>Continuation</legend>
+      {{ range_input("length", "New notes", 8, 192, 8, 48) }}
+      {{ range_input("temperature", "Adventurousness", 0.2, 2.0, 0.1, 1.0, "", "Low repeats the safest next note; high takes more chances.") }}
+      <label class="check"><input type="checkbox" name="stay_in_key" checked><span>Stay in the key of the melody</span></label>
+      <label class="check"><input type="checkbox" name="smooth" checked><span>Smooth line <span class="muted">(no leaps wider than a major sixth)</span></span></label>
+      <label class="check"><input type="checkbox" name="snap" checked><span>Keep to the beat <span class="muted">(round timing to sixteenth notes)</span></span></label>
+      <div class="row">
+        <div class="field">
+          <label class="label" for="in-voice">Instrument</label>
+          {{ voice_select("voice", "piano") }}
+        </div>
+        <div class="field">
+          <label class="label" for="in-seed">Variation number <span class="muted">(optional)</span></label>
+          <input type="number" name="seed" id="in-seed" min="1" max="1000000" placeholder="Random">
+          <p class="hint-text">The same number with the same settings gives the same notes.</p>
+        </div>
+      </div>
+    </fieldset>
+    <div class="actions"><button class="btn btn-primary" type="submit">Write a continuation</button></div>
+  </form>
+  <aside class="side">
+    <section>
+      <h2>About the model</h2>
+      <p>A small recurrent network (an LSTM) that looks at the last 25 notes and predicts the next note's pitch, timing and length. It was trained on piano music following TensorFlow's music generation tutorial, so it writes in a loose piano style.</p>
+      <p class="muted">The three options above are rules applied on top of the model. Turn them off to hear it unrestricted.</p>
+    </section>
+    <section>
+      <h2>Recent compositions</h2>
+      {{ recent_list(recent, "None yet.") }}
+    </section>
+  </aside>
+</div>
+{% endblock %}

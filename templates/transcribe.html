@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% from "_macros.html" import dropzone, recent_list, range_input with context %}
+{% block title %}Audio to sheet music{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>Audio to sheet music</h1>
+  <p>Hear a recording as notes: get engraved sheet music, a MIDI file and a MusicXML file you can open in MuseScore, Finale or Sibelius.</p>
+</header>
+<div class="tool-layout">
+  <form class="panel" method="post" action="{{ url_for('main.api_transcribe') }}" enctype="multipart/form-data" data-job-form>
+    <div class="field">
+      {{ dropzone("file", ".wav,.mp3,.flac,.ogg,.oga,.aif,.aiff,.mid,.midi,audio/*", "Choose or drop a recording or MIDI file", "Audio up to 5 minutes, or a .mid file to engrave directly.") }}
+    </div>
+    <fieldset>
+      <legend>What to write down</legend>
+      <label class="check"><input type="checkbox" name="melody_only" checked><span>Melody only <span class="muted">(the highest note at each moment; much easier to read)</span></span></label>
+      <div class="row">
+        <div class="field">
+          <label class="label" for="in-range">Range</label>
+          <select name="range" id="in-range">
+            <option value="all">Everything</option>
+            <option value="high">Upper notes (from middle C)</option>
+            <option value="mid">Middle (C3 to C6)</option>
+            <option value="low">Bass (up to middle C)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="label" for="in-meter">Time signature</label>
+          <select name="meter" id="in-meter">
+            <option>4/4</option><option>3/4</option><option>2/4</option><option>6/8</option>
+          </select>
+        </div>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Rhythm</legend>
+      <div class="segmented" role="radiogroup" aria-label="Shortest note">
+        <label><input type="radio" name="grid" value="2"><span>Eighth notes</span></label>
+        <label><input type="radio" name="grid" value="4" checked><span>Sixteenth notes</span></label>
+        <label><input type="radio" name="grid" value="3"><span>Triplets</span></label>
+      </div>
+      <p class="hint-text">The shortest note the sheet music uses. Coarser is tidier.</p>
+    </fieldset>
+    {{ range_input("sensitivity", "Sensitivity", 0, 1, 0.05, 0.5, "", "Higher finds quieter notes, and more wrong ones.") }}
+    <div class="field">
+      <label class="label" for="in-tempo">Tempo <span class="muted">(optional)</span></label>
+      <input type="number" name="tempo" id="in-tempo" min="40" max="220" placeholder="Found automatically" style="max-width:14rem">
+    </div>
+    <div class="actions"><button class="btn btn-primary" type="submit">Write it down</button></div>
+  </form>
+  <aside class="side">
+    <section>
+      <h2>Works best with</h2>
+      <ul>
+        <li>One instrument or voice, recorded clearly.</li>
+        <li>Piano, guitar, flute, voice and other instruments with a clear start to each note.</li>
+      </ul>
+      <p class="muted">Dense band or orchestra recordings come out as many notes at once; turn on <b>Melody only</b> for those. Bowed strings and organ are recognised poorly.</p>
+      <p class="muted small">Notes are found with Spotify's open-source Basic Pitch model.</p>
+    </section>
+    <section>
+      <h2>Recent transcriptions</h2>
+      {{ recent_list(recent, "None yet.") }}
+    </section>
+  </aside>
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% macro dropzone(name, accept, title, hint, required=True) -%}
+<div class="dropzone" data-dropzone>
+  <input type="file" name="{{ name }}" id="file-{{ name }}" accept="{{ accept }}" {% if required %}required{% endif %} aria-describedby="hint-{{ name }}">
+  <div class="dz-title">{{ title }}</div>
+  <div class="muted small" id="hint-{{ name }}">{{ hint }}</div>
+  <div class="dz-file" data-filename></div>
+</div>
+{%- endmacro %}
+
+{% macro recent_list(items, empty="Nothing yet.") -%}
+{% if items %}
+<ul class="recent">
+  {% for r in items %}
+  <li><a href="{{ url_for('main.result', rid=r.id) }}"><span class="t">{{ r.title }}</span><span class="s">{{ r.summary }}</span></a></li>
+  {% endfor %}
+</ul>
+{% else %}<p class="empty">{{ empty }}</p>{% endif %}
+{%- endmacro %}
+
+{% macro range_input(name, label, min, max, step, value, suffix="", hint="") -%}
+<div class="field">
+  <label class="label" for="in-{{ name }}">{{ label }}</label>
+  <div class="range-row">
+    <input type="range" id="in-{{ name }}" name="{{ name }}" min="{{ min }}" max="{{ max }}" step="{{ step }}" value="{{ value }}" data-output="out-{{ name }}" data-suffix="{{ suffix }}">
+    <output id="out-{{ name }}" for="in-{{ name }}">{{ value }}{{ suffix }}</output>
+  </div>
+  {% if hint %}<p class="hint-text">{{ hint }}</p>{% endif %}
+</div>
+{%- endmacro %}
+
+{% macro voice_select(name="voice", selected="piano", include_auto=False) -%}
+<select name="{{ name }}" id="in-{{ name }}">
+  {% for key, (label, program) in voices.items() %}
+    {% if include_auto or key != 'auto' %}
+    <option value="{{ key }}" {% if key == selected %}selected{% endif %}>{{ label }}</option>
+    {% endif %}
+  {% endfor %}
+</select>
+{%- endmacro %}
+
+{% macro download_list(items) -%}
+<ul class="downloads">
+  {% for url, label, detail in items if url %}
+  <li><a href="{{ url }}?download=1" download><b>{{ label }}</b><span>{{ detail }}</span></a></li>
+  {% endfor %}
+</ul>
+{%- endmacro %}
+
+{% macro sheet_pages(r, files) -%}
+{% for i in range(1, (r.data.pages or 0) + 1) %}
+  <div class="sheet"><img src="{{ files['sheet_' ~ i] }}" alt="Sheet music, page {{ i }} of {{ r.data.pages }}" loading="lazy" style="width:100%;height:auto;display:block"></div>
+{% endfor %}
+{%- endmacro %}
+
+{% macro next_form(action, fields, label) -%}
+<form method="post" action="{{ action }}" data-job-form>
+  {% for k, v in fields.items() %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+  <button class="btn btn-secondary" type="submit">{{ label }}</button>
+</form>
+{%- endmacro %}

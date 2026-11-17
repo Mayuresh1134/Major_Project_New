@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% from "_macros.html" import download_list, next_form with context %}
+{% block title %}{{ r.title }}{% endblock %}
+{% block content %}
+{% include "_result_head.html" %}
+<dl class="facts">
+  <div><dt>Notes</dt><dd class="num">{{ "{:,}".format(d.stats.count) }}</dd></div>
+  <div><dt>Key</dt><dd>{{ d.key.name }}</dd></div>
+  <div><dt>Tempo</dt><dd>{{ d.tempo|round|int }} <small>BPM</small></dd></div>
+  <div><dt>Range</dt><dd>{{ d.stats.lowest }}–{{ d.stats.highest }}</dd></div>
+</dl>
+<div class="result-grid">
+  <div>
+    {% if files.audio %}
+    <p class="player-label"><span class="swatch" style="background:var(--ink)"></span>Original recording</p>
+    <audio controls preload="metadata" src="{{ files.audio }}" id="a-orig"></audio>
+    {% endif %}
+    <p class="player-label" style="margin-top:1rem"><span class="swatch" style="background:var(--seed)"></span>The notes found, played on piano</p>
+    <audio controls preload="metadata" src="{{ files.notes_audio }}" id="a-notes"></audio>
+    <div style="margin-top:1.4rem">{% with roll_id="roll", roll_title="Notes found" %}{% include "_roll.html" %}{% endwith %}</div>
+    <p class="legend">Play either recording and the piano roll follows. Listen to both to hear what was missed.</p>
+  </div>
+  <aside class="side">
+    <section>
+      <h2>Downloads</h2>
+      {{ download_list([(files.midi, "MIDI", "Every note, for any music program"), (files.musicxml, "MusicXML", "Open and edit in MuseScore, Finale, Sibelius"), (files.notes_audio, "Played-back notes", "WAV audio")]) }}
+    </section>
+    <section class="next-steps">
+      <h2>Next</h2>
+      {{ next_form(url_for('main.api_render'), {"source": "result", "result_id": r.id, "voice": "piano"}, "Play the sheet music in another instrument") }}
+      {{ next_form(url_for('main.api_compose'), {"source": "result", "result_id": r.id, "length": "48", "temperature": "1.0", "stay_in_key": "on", "smooth": "on", "snap": "on", "voice": "piano"}, "Let the model continue this melody") }}
+      {% if files.audio %}{{ next_form(url_for('main.api_analyze'), {"from_result": r.id}, "Analyze the recording") }}{% endif %}
+      <button class="link-button" type="button" data-delete="{{ url_for('main.api_delete', rid=r.id) }}" data-title="{{ r.title }}" data-after="{{ url_for('main.library') }}">Delete this transcription</button>
+    </section>
+  </aside>
+</div>
+{% include "_sheet_block.html" %}
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/viz.js') }}"></script>
+<script>
+  const roll = new Muse.PianoRoll(document.getElementById("roll"), {{ d.notes|tojson }}, {
+    audios: [document.getElementById("a-notes"), document.getElementById("a-orig")]
+  });
+  document.querySelectorAll("[data-zoom]").forEach((b) => b.addEventListener("click", () => roll.zoom(+b.dataset.f)));
+</script>
+{% endblock %}

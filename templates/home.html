@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% from "_macros.html" import recent_list with context %}
+{% block title %}Study, transcribe and write music{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>Study, transcribe and write music.</h1>
+  <p class="lede">Find the tempo, key, chords and genre of a recording, turn audio into sheet music and sheet music into audio, or let a trained model continue your melody. Everything runs on your own computer.</p>
+  <div class="hero-keys">
+    <div id="home-keys" class="keyboard tall" aria-label="Piano keyboard, C3 to C6"></div>
+    <div class="hint">
+      <span>Play with the mouse, a finger, or the keys <kbd>A</kbd> to <kbd>K</kbd>. <kbd>Z</kbd> and <kbd>X</kbd> move an octave.</span>
+      <span aria-live="polite">Playing <span class="now" id="home-now">–</span></span>
+    </div>
+  </div>
+</section>
+
+<h2 class="visually-hidden">Tools</h2>
+<ul class="tool-list">
+  {% for endpoint, label, into, out in tools %}
+  <li><a href="{{ url_for(endpoint) }}">
+    <span class="name">{{ label }}</span>
+    <span class="io">From <b>{{ into }}</b></span>
+    <span class="io">To <b>{{ out }}</b></span>
+  </a></li>
+  {% endfor %}
+</ul>
+
+<section>
+  <div class="section-title"><h2>Recent work</h2>{% if recent %}<a href="{{ url_for('main.library') }}">Open the library</a>{% endif %}</div>
+  {{ recent_list(recent, "Your results will be listed here. Start with any tool above.") }}
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/piano.js') }}"></script>
+<script>
+  const now = document.getElementById("home-now");
+  const kb = new Muse.Keyboard(document.getElementById("home-keys"), {
+    low: 48, high: 84, labels: "c", computerKeys: true,
+    onNote: (m, on) => { if (on) now.textContent = Muse.noteName(m); }
+  });
+  if (window.matchMedia("(max-width: 600px)").matches) { kb.low = 60; kb.high = 79; kb.render(); }
+</script>
+{% endblock %}

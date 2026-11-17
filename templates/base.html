@@ -1,98 +1,65 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flask Project</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <style>
-       
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}MuseAssist{% endblock %} – MuseAssist</title>
+  <meta name="description" content="Analyze recordings, turn audio into sheet music and back, continue melodies with a trained model, and practise.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 24'%3E%3Cg stroke='%231d1b3a' stroke-width='1.6'%3E%3Cpath d='M1 3h32M1 8h32M1 13h32M1 18h32M1 23h32'/%3E%3C/g%3E%3Cellipse cx='14' cy='15.5' rx='5' ry='3.6' transform='rotate(-22 14 15.5)' fill='%23c8902e'/%3E%3Cpath d='M18.6 14V1.5' stroke='%23c8902e' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <script>
+    try {
+      var t = localStorage.getItem("muse-theme");
+      if (t === "dark" || (!t && window.matchMedia("(prefers-color-scheme: dark)").matches)) document.documentElement.dataset.theme = "dark";
+    } catch (e) {}
+  </script>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="/">MuseAssist</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto" id="navbar-links">
-                    <li class="nav-item">
-                        <a class="nav-link" aria-current="page" href="/">Home</a>
-                        <div class="highlight"></div>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/sheet2music">Sheet To Music</a>
-                        <div class="highlight"></div>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/music2sheet">Music To Sheet</a>
-                        <div class="highlight"></div>
-                    </li>
-                    
-                    <li class="nav-item">
-                        <a class="nav-link" href="/audio_visualization">Music Tools</a>
-                        <div class="highlight"></div>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/style_transfer">Style Transfer</a>
-                        <div class="highlight"></div>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/generation">Generate Audio</a>
-                        <div class="highlight"></div>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/learn">Learn</a>
-                        <div class="highlight"></div>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-    
-    <div class="container mt-5">
-        {% block content %}{% endblock %}
+  <a class="visually-hidden" href="#main">Skip to content</a>
+  <header class="topbar">
+    <div class="wrap">
+      <a class="brand" href="{{ url_for('main.home') }}">
+        <svg viewBox="0 0 34 24" aria-hidden="true"><g stroke="currentColor" stroke-width="1.4" opacity=".75"><path d="M1 3h32M1 8h32M1 13h32M1 18h32M1 23h32"/></g><ellipse cx="14" cy="15.5" rx="5" ry="3.6" transform="rotate(-22 14 15.5)" fill="var(--brass-deep)"/><path d="M18.6 14V1.5" stroke="var(--brass-deep)" stroke-width="2"/></svg>
+        MuseAssist
+      </a>
+      <button class="icon-button menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <nav class="nav" id="site-nav" aria-label="Tools">
+        {% for endpoint, label, _in, _out in tools %}
+          <a href="{{ url_for(endpoint) }}" {% if request.endpoint == endpoint %}aria-current="page"{% endif %}>{{ label }}</a>
+        {% endfor %}
+        <a href="{{ url_for('main.library') }}" {% if request.endpoint == 'main.library' %}aria-current="page"{% endif %}>Library</a>
+      </nav>
+      <button class="icon-button" type="button" id="theme-toggle" aria-label="Switch to dark theme">
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+      </button>
     </div>
+  </header>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // JavaScript to handle navbar button highlight on click
-        document.addEventListener('DOMContentLoaded', function () {
-            const navLinks = document.querySelectorAll('#navbar-links .nav-link');
-            navLinks.forEach(link => {
-                link.addEventListener('click', function () {
-                    // Remove active class from all links
-                    navLinks.forEach(item => item.classList.remove('active'));
-                    // Add active class to the clicked link
-                    this.classList.add('active');
-                });
-            });
-
-            // Highlight the active page based on the URL
-            const currentLocation = location.pathname;
-            navLinks.forEach(link => {
-                if (link.getAttribute('href') === currentLocation) {
-                    link.classList.add('active');
-                }
-            });
-        });
-    </script>
-
-<!-- Footer -->
-<footer class="bg-black py-4">
-    <div class="container text-center">
-        <p>&copy; 2024 My Flask App. All rights reserved.</p>
-        <ul class="list-unstyled d-inline-flex">
-            <li class="mx-2"><a href="#" class="text-light">Privacy Policy</a></li>
-            <li class="mx-2"><a href="#" class="text-light">Terms of Service</a></li>
-            <li class="mx-2"><a href="#" class="text-light">Contact Us</a></li>
-        </ul>
+  <main id="main">
+    <div class="wrap">
+      {% block content %}{% endblock %}
     </div>
-</footer>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <span>MuseAssist runs on your computer. Your files stay in its <code>app_data</code> folder.</span>
+      <span>Built with Flask, librosa, music21, Verovio and Basic Pitch.</span>
+    </div>
+  </footer>
+
+  <div class="overlay" id="progress-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="progress-title">
+    <div class="panel">
+      <h2 id="progress-title">Working on it</h2>
+      <p class="stage" id="progress-stage" aria-live="polite">Uploading</p>
+      <div class="progress" role="progressbar" aria-labelledby="progress-stage" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div></div></div>
+      <p class="muted small" id="progress-note">You can leave this page open; the result opens when it's ready.</p>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  {% block scripts %}{% endblock %}
 </body>
 </html>

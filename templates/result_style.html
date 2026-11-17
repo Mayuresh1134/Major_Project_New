@@ -1,21 +1,38 @@
 {% extends "base.html" %}
-
+{% from "_macros.html" import download_list with context %}
+{% block title %}{{ r.title }}{% endblock %}
 {% block content %}
-<div class="container mt-5">
-
-    <!-- Audio Style Transfer Section -->
-    <div class="step mb-5">
-        <h1>Generated Results</h1>
-        <h2>Stylized Audio Output</h2>
-        <audio controls>
-            <source src="{{ url_for('uploaded_file', filename=audio_file) }}" type="audio/wav">
-            Your browser does not support the audio element.
-        </audio>
-    
-        <h2>Audio Style Transfer Visualization</h2>
-        <img src="{{ url_for('uploaded_file', filename=image_file) }}" alt="Output Visualization">
-    
-    </div>
-
+{% include "_result_head.html" %}
+{% set o = d.options %}
+<dl class="facts">
+  <div><dt>Length</dt><dd>{{ o.seconds }} <small>s</small></dd></div>
+  <div><dt>Style strength</dt><dd>{{ (o.strength * 100)|round|int }}%</dd></div>
+  <div><dt>Texture matched</dt><dd>{{ (d.style_change * 100)|round|int }}%</dd></div>
+  <div><dt>Quality</dt><dd>{{ o.quality|capitalize }} <small>({{ o.steps }} steps)</small></dd></div>
+</dl>
+<div class="trio">
+  {% for key, label, color in [("content", "Content: " ~ d.names.content, "var(--seed)"), ("style", "Style: " ~ d.names.style, "var(--ink)"), ("result", "Result", "var(--ai)")] %}
+  <figure>
+    <figcaption><span class="swatch" style="background:{{ color }}"></span><span style="overflow-wrap:anywhere">{{ label }}</span></figcaption>
+    <audio controls preload="metadata" src="{{ files[key] }}"></audio>
+    <img class="spectro" style="height:170px;margin-top:.6rem" src="{{ files[key ~ '_spectrogram'] }}" alt="Spectrogram of the {{ key }} clip">
+  </figure>
+  {% endfor %}
+</div>
+<p class="legend">Spectrograms from 0 to about 4.5 kHz. “Texture matched” is how much of the gap between the two clips' textures was closed.</p>
+<div class="result-grid" style="margin-top:1.6rem">
+  <div>
+    <p class="note">The result keeps the content clip's timing and borrows the style clip's tone colour. Metallic or smeared sound is normal: the phase of the sound is estimated, not known.</p>
+  </div>
+  <aside class="side">
+    <section>
+      <h2>Downloads</h2>
+      {{ download_list([(files.result, "Result", "WAV"), (files.content, "Content clip used", "WAV"), (files.style, "Style clip used", "WAV, looped or trimmed to length")]) }}
+    </section>
+    <section class="next-steps">
+      <a class="btn btn-secondary" href="{{ url_for('main.style') }}">Try another strength or pair</a>
+      <button class="link-button" type="button" data-delete="{{ url_for('main.api_delete', rid=r.id) }}" data-title="{{ r.title }}" data-after="{{ url_for('main.library') }}">Delete</button>
+    </section>
+  </aside>
 </div>
 {% endblock %}

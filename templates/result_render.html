@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% from "_macros.html" import download_list, next_form with context %}
+{% block title %}{{ r.title }}{% endblock %}
+{% block content %}
+{% include "_result_head.html" %}
+<dl class="facts">
+  <div><dt>Instrument</dt><dd>{{ voices[d.options.voice][0] }}</dd></div>
+  <div><dt>Tempo</dt><dd>{{ d.tempo|round|int }} <small>BPM{% if d.options.tempo_pct != 100 %}, {{ d.options.tempo_pct }}% speed{% endif %}</small></dd></div>
+  <div><dt>Key</dt><dd>{{ d.key.name }}{% if d.options.transpose %} <small>({{ "%+d"|format(d.options.transpose) }})</small>{% endif %}</dd></div>
+  <div><dt>Notes</dt><dd class="num">{{ "{:,}".format(d.stats.count) }}</dd></div>
+</dl>
+<div class="result-grid">
+  <div>
+    <p class="player-label">Audio</p>
+    <audio controls preload="metadata" src="{{ files.audio }}" id="player"></audio>
+    <div style="margin-top:1.4rem">{% with roll_id="roll" %}{% include "_roll.html" %}{% endwith %}</div>
+  </div>
+  <aside class="side">
+    <section>
+      <h2>Downloads</h2>
+      {{ download_list([(files.audio, "Audio", "WAV"), (files.midi, "MIDI", "For any music program"), (files.musicxml, "MusicXML", "Open and edit in your notation program")]) }}
+    </section>
+    <section class="next-steps">
+      <h2>Next</h2>
+      {{ next_form(url_for('main.api_compose'), {"source": "result", "result_id": r.id, "length": "48", "temperature": "1.0", "stay_in_key": "on", "smooth": "on", "snap": "on", "voice": d.options.voice if d.options.voice != "auto" else "piano"}, "Let the model continue this melody") }}
+      <a class="btn btn-secondary" href="{{ url_for('main.play') }}">Play another score</a>
+      <button class="link-button" type="button" data-delete="{{ url_for('main.api_delete', rid=r.id) }}" data-title="{{ r.title }}" data-after="{{ url_for('main.library') }}">Delete</button>
+    </section>
+  </aside>
+</div>
+{% include "_sheet_block.html" %}
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/viz.js') }}"></script>
+<script>
+  const roll = new Muse.PianoRoll(document.getElementById("roll"), {{ d.notes|tojson }}, { audio: document.getElementById("player") });
+  document.querySelectorAll("[data-zoom]").forEach((b) => b.addEventListener("click", () => roll.zoom(+b.dataset.f)));
+</script>
+{% endblock %}
