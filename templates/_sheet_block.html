@@ -1,0 +1,9 @@
+{% from "_macros.html" import sheet_pages with context %}
+<section style="margin-top:2rem">
+  <div class="section-title">
+    <h2>Sheet music</h2>
+    <a class="btn btn-secondary btn-small" href="{{ url_for('main.print_sheet', rid=r.id) }}" target="_blank" rel="noopener">Print or save as PDF</a>
+  </div>
+  {% if d.sheet_truncated %}<p class="note">The sheet music shows the first 3 minutes. The MIDI file has every note.</p>{% endif %}
+  {{ sheet_pages(r, files) }}
+</section>

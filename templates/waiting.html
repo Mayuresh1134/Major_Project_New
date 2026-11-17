@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Working on it{% endblock %}
+{% block content %}
+<div data-waiting data-status="{{ url_for('main.job_status', job_id=job.id) }}" data-result="{{ url_for('main.result', rid=job.id) }}">
+  <h1>Still working on it</h1>
+  <p>{{ job.stage }}. This page opens the result when it's ready.</p>
+  <p class="form-error" role="alert"></p>
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% from "_macros.html" import dropzone, recent_list, range_input with context %}
+{% block title %}Style transfer{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>Audio style transfer</h1>
+  <p>Reshape one recording's sound so its texture matches another's: the timing comes from the first, the tone colour from the second.</p>
+</header>
+<div class="tool-layout">
+  <form class="panel" method="post" action="{{ url_for('main.api_style') }}" enctype="multipart/form-data" data-job-form>
+    <div class="row">
+      <div class="field">
+        <span class="label">Content</span>
+        {{ dropzone("content", ".wav,.mp3,.flac,.ogg,.oga,.aif,.aiff,audio/*", "The recording to change", "Its rhythm and shape are kept.") }}
+      </div>
+      <div class="field">
+        <span class="label">Style</span>
+        {{ dropzone("style", ".wav,.mp3,.flac,.ogg,.oga,.aif,.aiff,audio/*", "The sound to borrow", "Its texture is copied. It is looped or trimmed to fit.") }}
+      </div>
+    </div>
+    <div class="row">
+      {{ range_input("seconds", "Length", 3, 30, 1, 15, " s") }}
+      <div class="field">
+        <label class="label" for="in-start">Start the content at</label>
+        <input type="number" id="in-start" name="start" min="0" max="600" step="0.5" value="0" style="max-width:10rem"> <span class="muted">seconds</span>
+      </div>
+    </div>
+    {{ range_input("strength", "Style strength", 0, 100, 5, 70, "%", "100% lets the style take over completely.") }}
+    <fieldset>
+      <legend>Quality</legend>
+      <div class="segmented" role="radiogroup" aria-label="Quality">
+        <label><input type="radio" name="quality" value="quick"><span>Quick</span></label>
+        <label><input type="radio" name="quality" value="standard" checked><span>Standard</span></label>
+        <label><input type="radio" name="quality" value="thorough"><span>Thorough</span></label>
+      </div>
+      <p class="hint-text">Standard takes about 20 seconds for 15 seconds of audio on a typical laptop; thorough takes twice as long.</p>
+    </fieldset>
+    <div class="actions"><button class="btn btn-primary" type="submit">Transfer the style</button></div>
+  </form>
+  <aside class="side">
+    <section>
+      <h2>How it works</h2>
+      <p>Both clips become spectrograms. A layer of fixed random filters describes each clip's texture as correlations between its filter responses. The content clip is then nudged, step by step, until its texture matches the style clip's, and turned back into sound.</p>
+      <p class="muted">Results sound like a blend of tone colours, not like a different performer: melody and rhythm stay those of the content clip. Expect some metallic artefacts.</p>
+    </section>
+    <section>
+      <h2>Recent transfers</h2>
+      {{ recent_list(recent, "None yet.") }}
+    </section>
+  </aside>
+</div>
+{% endblock %}

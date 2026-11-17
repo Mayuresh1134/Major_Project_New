@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% from "_macros.html" import recent_list, range_input, voice_select with context %}
+{% block title %}Sheet music to audio{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>Sheet music to audio</h1>
+  <p>Hear a score played back, slower or faster, in another key or on another instrument, and see it engraved.</p>
+</header>
+<div class="tool-layout">
+  <form class="panel" method="post" action="{{ url_for('main.api_render') }}" enctype="multipart/form-data" data-job-form>
+    {% with legend="Score", results=scores, prefix="play", default_tab="example" %}{% include "_source_tabs.html" %}{% endwith %}
+    <fieldset>
+      <legend>Playback</legend>
+      <div class="field">
+        <label class="label" for="in-voice">Instrument</label>
+        {{ voice_select("voice", "piano", include_auto=True) }}
+        <p class="hint-text">“As written” uses the instruments named in the score.</p>
+      </div>
+      {{ range_input("tempo_pct", "Speed", 25, 300, 5, 100, "%") }}
+      <div class="field">
+        <label class="label" for="in-transpose">Transpose</label>
+        <div class="range-row">
+          <input type="range" id="in-transpose" name="transpose" min="-12" max="12" step="1" value="0" data-output="out-transpose" data-suffix=" semitones" data-format="signed">
+          <output id="out-transpose" for="in-transpose" style="min-width:11ch">0 semitones</output>
+        </div>
+      </div>
+    </fieldset>
+    <div class="actions"><button class="btn btn-primary" type="submit">Play the score</button></div>
+  </form>
+  <aside class="side">
+    <section>
+      <h2>Good to know</h2>
+      <ul>
+        <li>A photo or PDF of printed music can't be read. Export MusicXML from your notation program instead.</li>
+        <li>MIDI files don't store key or note spelling, so the engraved score may spell some notes differently from the original.</li>
+        <li>Sound comes from MuseAssist's built-in synthesizer.{% if fluidsynth %} FluidSynth and your SoundFont are used for fixed instruments.{% else %} For General MIDI sound, install FluidSynth and put a <code>.sf2</code> file in the <code>soundfonts</code> folder.{% endif %}</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Recently played</h2>
+      {{ recent_list(recent, "None yet.") }}
+    </section>
+  </aside>
+</div>
+{% endblock %}

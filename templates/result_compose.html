@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% from "_macros.html" import download_list, next_form with context %}
+{% block title %}{{ r.title }}{% endblock %}
+{% block content %}
+{% include "_result_head.html" %}
+{% set o = d.options %}
+<dl class="facts">
+  <div><dt>Your melody</dt><dd class="num">{{ d.seed_count }} <small>notes</small></dd></div>
+  <div><dt>New</dt><dd class="num">{{ d.new_count }} <small>notes</small></dd></div>
+  <div><dt>Key</dt><dd>{{ d.key.name }}</dd></div>
+  <div><dt>Tempo</dt><dd>{{ d.tempo|round|int }} <small>BPM</small></dd></div>
+</dl>
+<div class="result-grid">
+  <div>
+    <p class="player-label">Your melody, then the continuation</p>
+    <audio controls preload="metadata" src="{{ files.audio }}" id="player"></audio>
+    <div style="margin-top:1.4rem">{% with roll_id="roll" %}{% include "_roll.html" %}{% endwith %}</div>
+    <div class="legend">
+      <span><i class="swatch" style="background:var(--seed)"></i>Your melody</span>
+      <span><i class="swatch" style="background:var(--ai)"></i>Written by the model</span>
+    </div>
+    <p class="muted small" style="margin-top:1rem">
+      Settings: adventurousness {{ o.temperature }}{{ ", in key" if o.stay_in_key }}{{ ", smooth line" if o.smooth }}{{ ", on the beat" if o.snap }}{% if o.seed %}, variation {{ o.seed }}{% endif %}.
+      {% if o.stay_in_key %}Left unrestricted, the model's own first choice was already in {{ d.key.name }} for {{ (d.model_in_key_rate * 100)|round|int }}% of notes.{% endif %}
+    </p>
+  </div>
+  <aside class="side">
+    <section>
+      <h2>Downloads</h2>
+      {{ download_list([(files.audio, "Audio", "WAV"), (files.midi, "MIDI", "Your melody and the continuation on two tracks"), (files.musicxml, "MusicXML", "Open and edit in your notation program")]) }}
+    </section>
+    <section class="next-steps">
+      <h2>Next</h2>
+      {% set src = r.source or {} %}
+      {% if src.type in ("example", "result") %}
+        {% set again = {"source": src.type, "length": o.length, "temperature": o.temperature, "voice": o.voice} %}
+        {% if src.type == "example" %}{% set _ = again.update({"example": src.key}) %}{% else %}{% set _ = again.update({"result_id": src.id}) %}{% endif %}
+        {% for k in ("stay_in_key", "smooth", "snap") if o[k] %}{% set _ = again.update({k: "on"}) %}{% endfor %}
+        {{ next_form(url_for('main.api_compose'), again, "Write another version") }}
+      {% endif %}
+      {{ next_form(url_for('main.api_compose'), {"source": "result", "result_id": r.id, "length": o.length, "temperature": o.temperature, "stay_in_key": "on" if o.stay_in_key else "", "smooth": "on" if o.smooth else "", "snap": "on" if o.snap else "", "voice": o.voice}, "Keep going from here") }}
+      {{ next_form(url_for('main.api_render'), {"source": "result", "result_id": r.id, "voice": "strings"}, "Hear it on strings") }}
+      <a class="btn btn-secondary" href="{{ url_for('main.compose') }}">Change the settings</a>
+      <button class="link-button" type="button" data-delete="{{ url_for('main.api_delete', rid=r.id) }}" data-title="{{ r.title }}" data-after="{{ url_for('main.library') }}">Delete</button>
+    </section>
+  </aside>
+</div>
+{% include "_sheet_block.html" %}
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/viz.js') }}"></script>
+<script>
+  const roll = new Muse.PianoRoll(document.getElementById("roll"), {{ d.notes|tojson }}, {
+    audio: document.getElementById("player"), marker: {{ d.continuation_starts|tojson }}, markerLabel: "The model starts"
+  });
+  document.querySelectorAll("[data-zoom]").forEach((b) => b.addEventListener("click", () => roll.zoom(+b.dataset.f)));
+</script>
+{% endblock %}

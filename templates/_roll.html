@@ -1,0 +1,9 @@
+{# piano roll with zoom; needs roll_id #}
+<div class="section-title">
+  <h2>{{ roll_title or "Notes" }}</h2>
+  <div class="zoom no-print" aria-label="Zoom">
+    <button class="btn btn-secondary btn-small" type="button" data-zoom="{{ roll_id }}" data-f="0.66" aria-label="Zoom out">−</button>
+    <button class="btn btn-secondary btn-small" type="button" data-zoom="{{ roll_id }}" data-f="1.5" aria-label="Zoom in">+</button>
+  </div>
+</div>
+<div class="viz" id="{{ roll_id }}" style="height:262px"></div>

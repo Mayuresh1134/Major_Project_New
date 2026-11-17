@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% from "_macros.html" import dropzone, recent_list with context %}
+{% block title %}Analyze a recording{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>Analyze a recording</h1>
+  <p>Find the tempo, key and likely chords, see how loud and bright it is, and hear which of ten genres it is closest to.</p>
+</header>
+<div class="tool-layout">
+  <form class="panel" method="post" action="{{ url_for('main.api_analyze') }}" enctype="multipart/form-data" data-job-form>
+    <div class="field">
+      {{ dropzone("audio", ".wav,.mp3,.flac,.ogg,.oga,.aif,.aiff,audio/*", "Choose or drop a recording", "WAV, MP3, FLAC, OGG or AIFF, up to 60 MB. The first 10 minutes are analyzed.") }}
+    </div>
+    <div class="actions"><button class="btn btn-primary" type="submit">Analyze</button></div>
+  </form>
+  <aside class="side">
+    <section>
+      <h2>What you get</h2>
+      <ul>
+        <li>Tempo in beats per minute, with every beat marked on the waveform.</li>
+        <li>Key, and how clearly the music sits in it.</li>
+        <li>Likely chords over time, shown while it plays.</li>
+        <li>Genre: the closest of blues, classical, country, disco, hip-hop, jazz, metal, pop, reggae and rock.</li>
+        <li>Loudness, dynamic range, brightness and a spectrogram.</li>
+      </ul>
+      {% if report.comparison %}
+      <p class="muted small">The genre model picked the right genre for {{ (report.comparison[-1].accuracy * 100)|round|int }}% of songs it had never heard, in a test on {{ "{:,}".format(report.songs) }} songs. It only knows those ten genres.</p>
+      {% endif %}
+    </section>
+    <section>
+      <h2>Recent analyses</h2>
+      {{ recent_list(recent, "None yet.") }}
+    </section>
+  </aside>
+</div>
+{% endblock %}

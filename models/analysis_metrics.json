@@ -1,0 +1,8 @@
+{
+  "pieces": 30,
+  "beats": 960,
+  "tempo_within_4_percent": 0.9,
+  "tempo_within_4_percent_or_double_or_half": 1.0,
+  "key_correct": 0.867,
+  "chord_correct_per_beat": 0.985
+}

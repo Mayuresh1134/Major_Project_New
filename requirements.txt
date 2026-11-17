@@ -1,0 +1,11 @@
+Flask>=3.0
+numpy>=1.24
+scipy>=1.10
+librosa>=0.10.2
+soundfile>=0.12
+matplotlib>=3.7
+h5py>=3.9
+pretty_midi>=0.2.11
+music21>=9.1
+verovio>=4.3
+onnxruntime>=1.17

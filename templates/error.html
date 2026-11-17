@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Problem{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>That didn't work</h1>
+  <p>{{ message }}</p>
+</header>
+<p><a class="btn btn-secondary" href="{{ url_for('main.home') }}">Go to the start page</a></p>
+{% endblock %}

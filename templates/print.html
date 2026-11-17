@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ r.title }} – sheet music</title>
+  <style>
+    body { margin: 0; background: #e9eaf2; font-family: system-ui, sans-serif; }
+    .bar { display: flex; gap: 1rem; align-items: center; justify-content: space-between; padding: 0.8rem 1.2rem; background: #1d1b3a; color: #fff; position: sticky; top: 0; }
+    .bar button { font: inherit; font-weight: 600; background: #e0ae52; color: #241a05; border: 0; border-radius: 999px; padding: 0.55rem 1.2rem; cursor: pointer; }
+    .page { background: #fff; width: min(210mm, 100% - 2rem); margin: 1.2rem auto; box-shadow: 0 2px 12px rgba(0,0,0,.15); }
+    .page img { display: block; width: 100%; height: auto; }
+    @media print {
+      @page { size: A4; margin: 10mm; }
+      body { background: #fff; }
+      .bar { display: none; }
+      .page { width: auto; margin: 0; box-shadow: none; break-after: page; }
+      .page:last-child { break-after: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bar"><span>{{ r.title }}: {{ pages|length }} page{{ "s" if pages|length != 1 }}</span><button onclick="window.print()">Print or save as PDF</button></div>
+  {% for url in pages %}<div class="page"><img src="{{ url }}" alt="Page {{ loop.index }}"></div>{% endfor %}
+</body>
+</html>

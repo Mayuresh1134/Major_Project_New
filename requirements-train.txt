@@ -1,0 +1,7 @@
+# Only needed to retrain or re-evaluate the models (python -m ml.train_genre, ml.evaluate_transcription)
+-r requirements.txt
+scikit-learn>=1.3
+pandas>=2.0
+mir_eval>=0.7
+pyfluidsynth>=1.3
+pytest>=8

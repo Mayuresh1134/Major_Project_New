@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% from "_macros.html" import next_form with context %}
+{% block title %}{{ r.title }}{% endblock %}
+{% block content %}
+{% include "_result_head.html" %}
+{% set g = d.genre %}
+<dl class="facts">
+  <div><dt>Tempo</dt><dd>{{ d.tempo.bpm|round|int }} <small>BPM</small></dd></div>
+  <div><dt>Key</dt><dd>{{ d.key.name }}</dd></div>
+  {% if g.top %}<div><dt>Closest genre</dt><dd style="text-transform:capitalize">{{ g.top }}</dd></div>{% endif %}
+  <div><dt>Length</dt><dd class="num">{{ (d.info.duration // 60)|int }}:{{ "%02d"|format((d.info.duration % 60)|int) }}</dd></div>
+  <div><dt>Loudness</dt><dd>{{ d.tone.rms_db }} <small>dBFS</small></dd></div>
+</dl>
+{% if d.info.duration > d.info.analysed_seconds + 1 %}<p class="note">Only the first {{ (d.info.analysed_seconds / 60)|round|int }} minutes were analyzed.</p>{% endif %}
+
+<div class="result-grid">
+  <div>
+    <p class="player-label">Recording</p>
+    <audio controls preload="metadata" src="{{ files.audio }}" id="player"></audio>
+    <div class="section-title" style="margin-top:1.4rem">
+      <h2>Beats and likely chords</h2>
+      <div><span class="muted small">Now </span><span class="chord-now" id="chord-now">–</span></div>
+    </div>
+    <div class="viz" id="wave" style="background:transparent"></div>
+    <div class="legend"><span>Small marks along the bottom are beats. Click anywhere to jump there.</span></div>
+    <p class="muted small">Chords are matched to major and minor triads only, so sevenths and richer chords show as their nearest triad. Clear, chord-based music works best.</p>
+
+    <h2 style="margin-top:1.6rem">Spectrogram</h2>
+    <div class="spectro-wrap">
+      <img class="spectro" id="spectro" src="{{ files.spectrogram }}" alt="Spectrogram: time runs left to right, pitch rises upward, brighter means louder.">
+      <div class="ph"></div>
+    </div>
+    <p class="legend">Time runs left to right and pitch upward, on a mel scale up to 11 kHz. Brighter is louder.</p>
+  </div>
+
+  <aside class="side">
+    <section>
+      <h2>Genre</h2>
+      {% if g.error %}
+        <p class="muted">{{ g.error }}</p>
+      {% else %}
+      <ul class="bars">
+        {% for item in g.genres[:5] %}
+        <li><span class="k">{{ item.genre }}</span><span class="bar"><i style="width:{{ (item.probability * 100)|round(1) }}%"></i></span><span class="v">{{ (item.probability * 100)|round|int }}%</span></li>
+        {% endfor %}
+      </ul>
+      <p class="muted small">{{ (g.agreement * 100)|round|int }}% of the {{ g.segments|length }} three-second slices agreed on {{ g.top }}.
+        {% if report and report.comparison %}On songs it had never heard, this model was right {{ (report.comparison[-1].accuracy * 100)|round|int }}% of the time.{% endif %}
+        It knows ten genres only.</p>
+      {% endif %}
+    </section>
+    <section>
+      <h2>Key</h2>
+      <div class="profile" aria-label="How much each pitch is heard">
+        {% for p in d.pitch_profile %}
+        <div class="{{ 'tonic' if loop.index0 == d.key.tonic else '' }}"><i style="height:{{ (p.weight * 82)|round(1) }}px"></i>{{ p.note }}</div>
+        {% endfor %}
+      </div>
+      <p class="muted small" style="margin-top:.6rem">How much each pitch is heard. {% if d.key.settled_by_chord %}{{ d.key.name }} and {{ d.key.runner_up }} fit almost equally well; {{ d.key.name }} was chosen because the music settles on {{ d.key.settled_by_chord }}.{% else %}{{ d.key.name }} fits best{% if d.key.runner_up %}; {{ d.key.runner_up }} is next{% if d.key.score - d.key.runner_up_score < 0.05 %} and almost as likely{% endif %}{% endif %}.{% endif %}</p>
+    </section>
+    {% if d.common_chords %}
+    <section>
+      <h2>Most common chords</h2>
+      <div class="chord-strip">{% for c in d.common_chords %}<span>{{ c }}</span>{% endfor %}</div>
+    </section>
+    {% endif %}
+    <section>
+      <h2>Sound</h2>
+      <table class="plain">
+        <tr><th>Tone</th><td>{{ d.tone.brightness|capitalize }} <span class="muted">({{ d.tone.brightness_hz }} Hz centre)</span></td></tr>
+        <tr><th>Rhythm</th><td>{{ d.tone.rhythm|capitalize }} <span class="muted">({{ (d.tone.percussive_share * 100)|round|int }}% percussive)</span></td></tr>
+        <tr><th>Dynamic range</th><td>{{ d.tone.dynamic_range_db }} dB</td></tr>
+        <tr><th>Peak</th><td>{{ d.tone.peak_db }} dBFS</td></tr>
+        <tr><th>Beat</th><td>{{ "Steady" if d.tempo.steadiness > 0.85 else "Varies" if d.tempo.steadiness > 0.6 else "Loose" }}</td></tr>
+        {% if d.info.original_sample_rate %}<tr><th>File</th><td>{{ d.info.original_sample_rate }} Hz, {{ "stereo" if d.info.channels == 2 else d.info.channels ~ " channel" }}</td></tr>{% endif %}
+      </table>
+    </section>
+    <section class="next-steps">
+      <h2>Next</h2>
+      {{ next_form(url_for('main.api_transcribe'), {"from_result": r.id, "melody_only": "on", "grid": "4", "sensitivity": "0.5"}, "Write the melody down as sheet music") }}
+      <a class="btn btn-secondary" href="{{ url_for('main.analyze') }}">Analyze another recording</a>
+      <button class="link-button" type="button" data-delete="{{ url_for('main.api_delete', rid=r.id) }}" data-title="{{ r.title }}" data-after="{{ url_for('main.library') }}">Delete this analysis</button>
+    </section>
+  </aside>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/viz.js') }}"></script>
+<script>
+  const data = {{ {"peaks": d.peaks, "duration": d.duration, "beats": d.tempo.beats, "chords": d.chords}|tojson }};
+  const audio = document.getElementById("player");
+  new Muse.Waveform(document.getElementById("wave"), data, { audio, chordNow: document.getElementById("chord-now") });
+  Muse.spectroHead(document.getElementById("spectro"), audio, data.duration);
+</script>
+{% endblock %}

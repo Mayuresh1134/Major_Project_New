@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Practice{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>Practice</h1>
+  <p>Explore chords and scales on the keyboard, train your ear, tune your instrument and keep time.</p>
+</header>
+
+<div id="kb" class="keyboard tall" aria-label="Piano keyboard, C3 to C6"></div>
+<p class="legend" style="justify-content:space-between">
+  <span>Keys <kbd>A</kbd> to <kbd>K</kbd> play from middle C; <kbd>Z</kbd> and <kbd>X</kbd> move an octave.</span>
+  <span><i class="swatch" style="background:var(--brass)"></i>Root <i class="swatch" style="background:var(--seed);margin-left:.8rem"></i>Chord or scale notes</span>
+</p>
+
+<div class="practice-grid" style="margin-top:1.4rem">
+  <section class="panel" aria-labelledby="explore-h">
+    <h2 id="explore-h">Chords and scales</h2>
+    <div data-tabs>
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" id="t-chords" aria-controls="p-chords" aria-selected="true">Chords</button>
+        <button type="button" role="tab" id="t-scales" aria-controls="p-scales" aria-selected="false">Scales</button>
+      </div>
+    </div>
+    <div class="tab-panel" id="p-chords" role="tabpanel" aria-labelledby="t-chords">
+      <div class="row">
+        <div class="field"><label class="label" for="chord-root">Root</label><select id="chord-root"></select></div>
+        <div class="field"><label class="label" for="chord-quality">Chord</label><select id="chord-quality"></select></div>
+        <div class="field"><label class="label" for="chord-inv">Voicing</label>
+          <select id="chord-inv"><option value="0">Root position</option><option value="1">First inversion</option><option value="2">Second inversion</option></select></div>
+      </div>
+      <p class="notes-line" id="chord-name" aria-live="polite"></p>
+      <p class="muted" id="chord-detail"></p>
+      <div class="actions">
+        <button class="btn btn-primary btn-small" type="button" id="chord-play">Play together</button>
+        <button class="btn btn-secondary btn-small" type="button" id="chord-arp">Play one by one</button>
+      </div>
+    </div>
+    <div class="tab-panel" id="p-scales" role="tabpanel" aria-labelledby="t-scales" hidden>
+      <div class="row">
+        <div class="field"><label class="label" for="scale-root">Root</label><select id="scale-root"></select></div>
+        <div class="field"><label class="label" for="scale-type">Scale</label><select id="scale-type"></select></div>
+      </div>
+      <p class="notes-line" id="scale-notes" aria-live="polite"></p>
+      <p class="muted" id="scale-steps"></p>
+      <div class="actions">
+        <button class="btn btn-primary btn-small" type="button" id="scale-play">Play up and down</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="ear-h">
+    <h2 id="ear-h">Ear training</h2>
+    <div class="row">
+      <div class="field">
+        <span class="label">Practise</span>
+        <div class="segmented" role="radiogroup" aria-label="Practise">
+          <label><input type="radio" name="ear-mode" value="interval" checked><span>Intervals</span></label>
+          <label><input type="radio" name="ear-mode" value="chord"><span>Chords</span></label>
+        </div>
+      </div>
+      <div class="field" id="ear-dir-field">
+        <label class="label" for="ear-dir">Interval played</label>
+        <select id="ear-dir"><option value="up">Rising</option><option value="down">Falling</option><option value="together">Together</option></select>
+      </div>
+    </div>
+    <div class="score-line"><span>Right <b id="ear-right" class="num">0</b> of <b id="ear-total" class="num">0</b></span><span>Streak <b id="ear-streak" class="num">0</b></span></div>
+    <div class="answer-grid" id="ear-answers" aria-label="Answers"></div>
+    <p class="feedback" id="ear-feedback" aria-live="polite">Press “New question” and name what you hear.</p>
+    <div class="actions">
+      <button class="btn btn-primary btn-small" type="button" id="ear-new">New question</button>
+      <button class="btn btn-secondary btn-small" type="button" id="ear-again" disabled>Hear it again</button>
+    </div>
+    <details style="margin-top:1rem"><summary>Choose which to include</summary><div id="ear-pool" class="row" style="margin-top:.8rem"></div></details>
+  </section>
+
+  <section class="panel" aria-labelledby="tuner-h">
+    <h2 id="tuner-h">Tuner</h2>
+    <div class="tuner-note" id="tuner-note" aria-live="polite">–</div>
+    <div class="tuner-meter" aria-hidden="true"><div class="tuner-needle" id="tuner-needle"></div></div>
+    <div class="tuner-scale" aria-hidden="true"><span>−50 cents</span><span>in tune</span><span>+50</span></div>
+    <p class="muted num" id="tuner-detail" style="margin-top:.6rem">Uses your microphone. Nothing is recorded or sent anywhere.</p>
+    <div class="actions">
+      <button class="btn btn-primary btn-small" type="button" id="tuner-toggle">Start the tuner</button>
+      <label class="small">A4 = <input type="number" id="tuner-a4" value="440" min="415" max="466" style="width:5.5rem;display:inline-block"> Hz</label>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="metro-h">
+    <h2 id="metro-h">Metronome</h2>
+    <div style="display:flex;align-items:baseline;gap:.6rem"><span class="metro-bpm" id="metro-bpm">100</span><span class="muted">beats per minute</span></div>
+    <div class="beats" id="metro-beats" aria-hidden="true"></div>
+    <div class="range-row" style="margin-bottom:1rem">
+      <button class="btn btn-secondary btn-small" type="button" id="metro-down" aria-label="Slower">−</button>
+      <input type="range" id="metro-tempo" min="30" max="240" value="100" aria-label="Tempo">
+      <button class="btn btn-secondary btn-small" type="button" id="metro-up" aria-label="Faster">+</button>
+    </div>
+    <div class="row">
+      <div class="field"><label class="label" for="metro-meter">Beats in a bar</label>
+        <select id="metro-meter"><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option></select></div>
+      <div class="field"><span class="label">First beat</span><label class="check"><input type="checkbox" id="metro-accent" checked><span>Accent it</span></label></div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary btn-small" type="button" id="metro-toggle">Start</button>
+      <button class="btn btn-secondary btn-small" type="button" id="metro-tap">Tap the tempo</button>
+    </div>
+  </section>
+</div>
+
+<section style="margin-top:2.4rem">
+  <h2>Video lessons</h2>
+  <div class="video-row">
+    {% for vid in ["tAh2XhAY9BA", "-3WuQxnA7Hg", "OA-DQPGvdiU"] %}
+    <iframe src="https://www.youtube-nocookie.com/embed/{{ vid }}" title="Video lesson {{ loop.index }} (YouTube)" loading="lazy" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    {% endfor %}
+  </div>
+  <p class="legend">These need an internet connection.</p>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/piano.js') }}"></script>
+<script src="{{ url_for('static', filename='js/practice.js') }}"></script>
+{% endblock %}

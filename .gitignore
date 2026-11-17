@@ -1,1 +1,13 @@
-static/soundfonts/
+# your results and uploads
+app_data/
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+# optional SoundFonts are large; add your own
+soundfonts/*.sf2
+# training inputs
+features/
+*.csv

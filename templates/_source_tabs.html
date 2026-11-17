@@ -1,0 +1,41 @@
+{# Where the music comes from: shared by Sheet to audio and Compose. Needs: examples, results, prefix, default_tab #}
+<fieldset>
+  <legend>{{ legend }}</legend>
+  <input type="hidden" name="source" value="{{ default_tab }}">
+  <div data-tabs data-field="source">
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" id="tab-example" aria-controls="panel-example" data-value="example" aria-selected="{{ 'true' if default_tab == 'example' else 'false' }}">Examples</button>
+      <button type="button" role="tab" id="tab-file" aria-controls="panel-file" data-value="file" aria-selected="{{ 'true' if default_tab == 'file' else 'false' }}">Upload a file</button>
+      <button type="button" role="tab" id="tab-abc" aria-controls="panel-abc" data-value="abc" aria-selected="false">Type notes</button>
+      <button type="button" role="tab" id="tab-result" aria-controls="panel-result" data-value="result" aria-selected="false">From your work</button>
+    </div>
+  </div>
+  <div class="tab-panel" id="panel-example" role="tabpanel" aria-labelledby="tab-example">
+    {% for key, (title, abc) in examples.items() %}
+    <label class="check"><input type="radio" name="example" value="{{ key }}" {% if loop.first %}checked{% endif %}><span>{{ title }}</span></label>
+    {% endfor %}
+    <p class="hint-text">All four are public-domain tunes.</p>
+  </div>
+  <div class="tab-panel" id="panel-file" role="tabpanel" aria-labelledby="tab-file" hidden>
+    <div class="dropzone" data-dropzone>
+      <input type="file" name="score" id="file-score" accept=".musicxml,.xml,.mxl,.mid,.midi,.abc" data-required>
+      <div class="dz-title">Choose or drop a score</div>
+      <div class="muted small">MusicXML (.musicxml, .mxl), MIDI (.mid) or ABC (.abc). MuseScore, Finale, Sibelius and Dorico all export MusicXML.</div>
+      <div class="dz-file" data-filename></div>
+    </div>
+  </div>
+  <div class="tab-panel" id="panel-abc" role="tabpanel" aria-labelledby="tab-abc" hidden>
+    <label class="label" for="in-abc">ABC notation</label>
+    <textarea name="abc" id="in-abc" spellcheck="false">{{ examples['twinkle'][1] }}</textarea>
+    <p class="hint-text">Letters are notes (C is middle C, c an octave up), a number after a note lengthens it, <code>|</code> is a bar line. <a href="https://abcnotation.com/learn" target="_blank" rel="noopener">Learn ABC notation</a></p>
+  </div>
+  <div class="tab-panel" id="panel-result" role="tabpanel" aria-labelledby="tab-result" hidden>
+    {% if results %}
+      {% for r in results %}
+      <label class="check"><input type="radio" name="result_id" value="{{ r.id }}" {% if loop.first %}checked{% endif %}><span>{{ r.title }} <span class="muted">({{ kind_labels[r.kind]|lower }})</span></span></label>
+      {% endfor %}
+    {% else %}
+      <p class="empty">Results from Audio to sheet{% if prefix == 'compose' %}, Sheet to audio{% endif %} and Compose will be listed here.</p>
+    {% endif %}
+  </div>
+</fieldset>
